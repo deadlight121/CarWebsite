@@ -7,7 +7,6 @@ function App() {
       const res = await fetch("/api/makes", {
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${apiJwtToken}`, // пока локально можно
         },
       });
 

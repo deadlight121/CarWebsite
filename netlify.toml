@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  # Проксируем все /api/* в нашу серверную функцию (см. handler)
+  from = "/api/*"
+  to = "/.netlify/functions/carapi"
+  status = 200

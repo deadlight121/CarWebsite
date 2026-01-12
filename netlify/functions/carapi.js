@@ -1,47 +1,50 @@
 
-import fetch from 'node-fetch'
+// netlify/functions/carapi.js
+// В Node 18+ на Netlify fetch доступен глобально — импорт не нужен.
 
-export default async (req, context) => {
+export async function handler(event, context) {
   try {
-    // Пример: клиент вызывает /api/makes?year=2020
-    const url = new URL(req.url)
-    const path = url.pathname.replace(/^\/api/, '') // '/makes' или '/models'
-    const query = url.search || ''                   // '?year=2020' и т.п.
+    // Пример: вызов /api/makes?year=2020
+    // event.path = "/api/makes"
+    // event.rawQuery = "year=2020"
 
-    // Читаем JWT из переменных окружения Netlify
-    const token = process.env.CAR_API_JWT
+    const incomingPath = (event.path || '').replace(/^\/api/, ''); // -> "/makes" или "/models"
+    const query = event.rawQuery ? `?${event.rawQuery}` : '';
+
+    const token = process.env.CAR_API_JWT;
     if (!token) {
-      return new Response(JSON.stringify({ error: 'Missing CAR_API_JWT' }), {
-        status: 500,
+      return {
+        statusCode: 500,
         headers: { 'Content-Type': 'application/json' },
-      })
+        body: JSON.stringify({ error: 'Missing CAR_API_JWT env var' }),
+      };
     }
 
-    // Проксируем запрос на CarAPI
-    const carApiUrl = `https://carapi.app/api${path}${query}`
-    const carRes = await fetch(carApiUrl, {
-      method: req.method, // обычно GET
+    const carApiUrl = `https://carapi.app/api${incomingPath}${query}`;
+
+    const apiRes = await fetch(carApiUrl, {
+      method: event.httpMethod || 'GET',
       headers: {
         'Accept': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-    })
+    });
 
-    // Пробрасываем результат
-    const body = await carRes.text()
-    return new Response(body, {
-      status: carRes.status,
+    const body = await apiRes.text();
+
+    return {
+      statusCode: apiRes.status,
       headers: {
-        'Content-Type': carRes.headers.get('content-type') || 'application/json',
-        // Разрешаем CORS для твоего фронта (тот же домен на Netlify)
+        'Content-Type': apiRes.headers.get('content-type') || 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
-    })
+      body,
+    };
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
+    return {
+      statusCode: 500,
       headers: { 'Content-Type': 'application/json' },
-    })
+      body: JSON.stringify({ error: err.message, stack: err.stack }),
+    };
   }
 }
-``

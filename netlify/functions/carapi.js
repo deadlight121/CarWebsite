@@ -25,6 +25,7 @@ export async function handler(event, context) {
     });
 
     const body = await apiRes.text();
+    console.log('CarAPI status:', apiRes.status, 'body:', body);
     return {
       statusCode: apiRes.status,
       headers: {

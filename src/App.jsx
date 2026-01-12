@@ -1,5 +1,4 @@
 import "./App.css";
-import { apiJwtToken } from "./api-token.js";
 
 function App() {
   const HandleClick = async () => {

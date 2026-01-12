@@ -1,15 +1,11 @@
 
-// netlify/functions/carapi.js
-// В Node 18+ на Netlify fetch доступен глобально — импорт не нужен.
-
 export async function handler(event, context) {
   try {
-    // Пример: вызов /api/makes?year=2020
-    // event.path = "/api/makes"
-    // event.rawQuery = "year=2020"
-
-    const incomingPath = (event.path || '').replace(/^\/api/, ''); // -> "/makes" или "/models"
+    const incomingPath = (event.path || '').replace(/^\/api/, '');
     const query = event.rawQuery ? `?${event.rawQuery}` : '';
+    const carApiUrl = `https://carapi.app/api${incomingPath}${query}`;
+
+    console.log('Proxying to:', carApiUrl); // <-- ВСТАВИТЬ СЮДА для проверки
 
     const token = process.env.CAR_API_JWT;
     if (!token) {
@@ -20,8 +16,6 @@ export async function handler(event, context) {
       };
     }
 
-    const carApiUrl = `https://carapi.app/api${incomingPath}${query}`;
-
     const apiRes = await fetch(carApiUrl, {
       method: event.httpMethod || 'GET',
       headers: {
@@ -31,7 +25,6 @@ export async function handler(event, context) {
     });
 
     const body = await apiRes.text();
-
     return {
       statusCode: apiRes.status,
       headers: {

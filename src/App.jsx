@@ -3,7 +3,7 @@ import "./App.css";
 function App() {
   const HandleClick = async () => {
     try {
-      const res = await fetch("/api/makes", {
+      const res = await fetch("/api/makes/v2", {
         headers: {
           Accept: "application/json",
         },
